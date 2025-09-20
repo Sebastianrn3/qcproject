@@ -1,0 +1,7 @@
+Prioritetines užduotys 20/09/2025:
+-Repozitoriumo struktūros tvarkymas
+-Sn2 reakcijos apibendrinimas 
+-Py scriptas mopac7 dailinimas
+-Atlikti gamess skaičiavimus sn2
+
+Iki šiol naudotos programos: nwchem, avogadro, mopac7. Eilėje: openbabel, gamess
