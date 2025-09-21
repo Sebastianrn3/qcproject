@@ -1,0 +1,45 @@
+Examples of use in bat/ps1/sh files:
+
+******************
+
+BAT: 
+
+@echo off
+call "%~dp0config\load_env.bat" || exit /b 1
+for /f %%T in ('powershell -NoP -C "Get-Date -Format yyyy-MM-dd_HH-mm-ss"') do set STAMP=%%T
+set "RUN_DIR=%WSL_RUNS%/%ENV_GAS%/%STAMP%"
+
+wsl -d %WSL_DISTRO% -e bash -lc "mkdir -p '%RUN_DIR%' '%WSL_SCRATCH%' && \
+  cd '%RUN_DIR%' && \
+  %WSL_NWCHEM_BIN% '%WSL_INPUTS%/%ENV_GAS%/input.nw' ^> output.out && \
+  echo OK"
+
+echo Done. Output in: %RUN_DIR%
+
+
+******************
+
+POWERSHELL:
+
+. "$PSScriptRoot\config\load_env.ps1"
+
+$stamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
+$runDir = "$env:WSL_RUNS/$env:ENV_GAS/$stamp"
+
+wsl -d $env:WSL_DISTRO -e bash -lc "mkdir -p '$runDir' '$env:WSL_SCRATCH' && cd '$runDir' && $env:WSL_NWCHEM_BIN '$env:WSL_INPUTS/$env:ENV_GAS/input.nw' > output.out"
+Write-Host "Done: $runDir (WSL) →" (wsl wslpath -w "$runDir")
+
+******************
+
+WSL-scripts:
+
+#!/usr/bin/env bash
+set -e
+. "$(dirname "$0")/config/load_env.sh"
+
+stamp="$(date +%F_%H-%M-%S)"
+run_dir="$WSL_RUNS/$ENV_GAS/$stamp"
+mkdir -p "$run_dir" "$WSL_SCRATCH"
+cd "$run_dir"
+"$WSL_NWCHEM_BIN" "$WSL_INPUTS/$ENV_GAS/input.nw" > output.out
+echo "Done: $run_dir"
