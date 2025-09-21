@@ -1,0 +1,27 @@
+start f_energy
+title "F- gas energy"
+memory total 1000 mb
+scratch_dir ./scratch
+permanent_dir ./perm
+
+echo
+
+charge -1
+geometry units angstrom
+ F 0 0 0
+end
+
+basis
+    * library def2-svpd
+end
+
+dft
+  xc b3lyp
+  mult 1
+  grid xfine
+  iterations 200
+end
+task dft energy
+
+#nwchem ~/СH3Cl+F=CH3F+Cl/inputs/gas_env/F_opt_freq.nw > ~/СH3Cl+F=CH3F+Cl/outputs/gas_env/F_opt_freq.out
+#grep -i "Total DFT energy" "$HOME/СH3Cl+F=CH3F+Cl/outputs/gas_env/F_opt_freq.out"

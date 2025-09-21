@@ -3,5 +3,6 @@ Prioritetines užduotys 20/09/2025:
 -Sn2 reakcijos apibendrinimas 
 -Py scriptas mopac7 dailinimas
 -Atlikti gamess skaičiavimus sn2
+-Config testavimai
 
 Iki šiol naudotos programos: nwchem, avogadro, mopac7. Eilėje: openbabel, gamess

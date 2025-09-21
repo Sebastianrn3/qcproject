@@ -1,0 +1,30 @@
+start CH3Cl_opt_freq
+title "CH3Cl gas opt+freq"
+memory total 2000 mb
+echo
+scratch_dir /mnt/c/Users/ddizy/Desktop/qcproject/reactions/sn2_methylchloride_f_attack/runs_nwchem/gas_phase/scratch
+permanent_dir /mnt/c/Users/ddizy/Desktop/qcproject/reactions/sn2_methylchloride_f_attack/runs_nwchem/gas_phase/perm
+
+charge 0
+geometry units angstrom
+ C   0.000   0.000   0.000
+ H   0.000   1.080   0.000
+ H   1.020  -0.360   0.000
+ H  -1.020  -0.360   0.000
+ Cl  0.000   0.000   1.78
+end
+
+basis
+    * library def2-svpd
+end
+
+dft
+  xc b3lyp
+  grid xfine
+  iterations 200
+end
+task dft optimize
+task dft freq
+
+#nwchem ~/СH3Cl+F=CH3F+Cl/inputs/gas_env/CH3Cl_opt_freq.nw > ~/СH3Cl+F=CH3F+Cl/outputs/gas_env/CH3Cl_opt_freq.out
+#grep -i "Total DFT energy" "$HOME/СH3Cl+F=CH3F+Cl/outputs/gas_env/CH3Cl_opt_freq.out"
