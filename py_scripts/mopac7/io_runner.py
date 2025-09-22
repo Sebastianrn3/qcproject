@@ -1,76 +1,102 @@
 import numpy as np
+import pandas as pd
 import subprocess, os
 from datetime import datetime
 
+KCAL_TO_KJ = 4.184
 EV_TO_KJMOL = 96.4853321233
 EV_TO_KCALMOL = 23.060548
 
-project_name="TEST"
+
 MOPAC7_PATH = "C:/Users/ddizy/Desktop/mopac7/"
-RESULT_PATH = "C:/Users/ddizy/Desktop/qcproject/tests/mopac7_results/"
-NAME_XYZ = "molecule.xyz"
+RESULT_PATH = "C:/Users/ddizy/Desktop/qcproject/py_scripts/mopac7/mopac7_results/"
+NAME_XYZ = "ch3cl_for_grad_test.xyz"
+
 
 multiplicity =  ["INVALID_MULTIPLICITY", "SINGLET", "DOUBLET", "TRIPLET", "QUARTET", "QUINTET", "SEXTET"]
-start_time = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+PROJECT_NAME="CH3Cl_gas"
+COMMENT="DFT_Energy_Gradient"
+CHARGE=0
+MULTI=multiplicity[1]
 
-COMMENT="TEST"
-CHARGE=-1
-MULTI=multiplicity[2]
-SPIN=0.5
 #**********************************
-#importuojama iš molecule.xyz
-xyz=""
-with open(MOPAC7_PATH + NAME_XYZ) as f:
-  xyz = f.read()
+def main():
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+    os.makedirs(RESULT_PATH, exist_ok=True)
 
-molecule = xyz.split()
-atoms = int(xyz.split()[0])
-geometry = np.array(molecule[1:]).reshape(atoms, 4)
+    atoms, geometry = import_xyz()
+    create_for005(atoms, geometry, timestamp)
+    clear_forxxx()
+    run_mopac_exe()
+    total_energy, gradients = parse_for006()
+    create_report(total_energy, gradients, timestamp)
+    print("DONE")
 
-#kuriamas FOR005
-input_text=f"""AM1 1SCF XYZ GRADIENTS {MULTI} MS={SPIN} CHARGE={CHARGE}
-{project_name} {start_time}
-{COMMENT}"""
+#**********************************
+def import_xyz():
+    with open(MOPAC7_PATH + NAME_XYZ) as f:
+        xyz = f.read()
+    atoms = int(xyz.split()[0])
+    geometry = np.array(xyz.split()[1:]).reshape(atoms, 4)
+    return atoms, geometry
 
-for n in range(atoms):
-    x = geometry[n]
-    input_text += f"{x[0]} {x[1]} 0 {x[2]} 0 {x[3]} 0\n"
+def create_for005(atoms, geometry, timestamp):
+    input_text=f"""AM1 1SCF XYZ GRADIENTS DEBUG DCART {MULTI} CHARGE={CHARGE}
+    {PROJECT_NAME} {timestamp}
+    {COMMENT}\n"""
 
-with open(MOPAC7_PATH + "FOR005", "w") as f:
-  f.write(input_text)
+    for n in range(atoms):
+        x = geometry[n]
+        input_text += f"{x[0]} {x[1]} 0 {x[2]} 0 {x[3]} 0\n"
 
-#pasalinamas FOR006 ir kt pries atliekant nauja skaiciavima
-if os.path.exists(MOPAC7_PATH + "FOR006"):
-    os.remove(MOPAC7_PATH + "FOR006")
-if os.path.exists(MOPAC7_PATH + "FOR011"):
-    os.remove(MOPAC7_PATH + "FOR011")
-if os.path.exists(MOPAC7_PATH + "FOR012"):
-    os.remove(MOPAC7_PATH + "FOR012")
-if os.path.exists(MOPAC7_PATH + "FOR016"):
-    os.remove(MOPAC7_PATH + "FOR016")
+    with open(MOPAC7_PATH + "FOR005", "w") as f:
+        f.write(input_text)
 
-#leidziamas exe
-exe = MOPAC7_PATH + "mopac7.exe"
-subprocess.run([str(exe)], cwd=str(MOPAC7_PATH),text=True, check=False)
+def clear_forxxx():
+    for file in ("FOR006", "FOR009", "FOR011", "FOR012", "FOR016", "SHUTDOWN"):
+        if os.path.exists(MOPAC7_PATH + file):
+            os.remove(MOPAC7_PATH + file)
 
-#parsinam
-text=""
-with open(MOPAC7_PATH + "FOR006") as f:
-  text = f.read()
+def run_mopac_exe():
+    subprocess.run([str(MOPAC7_PATH + "mopac7.exe")], cwd=str(MOPAC7_PATH),text=True, check=False)
 
-readFrom = text.find("TOTAL ENERGY")
-readTo = text[readFrom:].find("EV")+readFrom
+def parse_for006():
+    with open(MOPAC7_PATH + "FOR006") as f:
+        text = f.read()
 
-total_energy = float(text[readFrom:readTo].split()[-1])*EV_TO_KCALMOL
+    readFrom = text.find("TOTAL ENERGY")
+    readTo = text[readFrom:].find("EV")+readFrom
+    total_energy_raw = text[readFrom:readTo]
+    total_energy = float(total_energy_raw.split()[-1])*EV_TO_KJMOL
 
-readFrom = text.find("FINAL  POINT  AND  DERIVATIVES")
-readTo   = text.rfind("KCAL/ANGSTROM")
+    readFrom = text.find("CARTESIAN COORDINATE DERIVATIVES")
+    gradients = np.array(text[readFrom:].split())[8:]
+    index=np.where(gradients=="-------------------------------------------------------------------------------")[0][0]
+    gradients = gradients[:index].reshape(-1, 5)
 
-result =f"""TOTAL ENERGY = {total_energy} KCAL/MOL\n\n {text[readFrom:readTo+15]}
-***FOR005 input***
-{input_text}
-***  XYZ input ***
-{xyz}"""
+    for row in gradients:
+        row[2] = float(row[2]) * KCAL_TO_KJ
+        row[3] = float(row[3]) * KCAL_TO_KJ
+        row[4] = float(row[4]) * KCAL_TO_KJ
 
-with open(RESULT_PATH + "result"+start_time+".txt", "w") as f:
-  f.write(result)
+    return total_energy, gradients
+
+
+
+def create_report(total_energy, gradients, timestamp):
+    with open(MOPAC7_PATH + NAME_XYZ) as f:
+        xyz = f.read()
+    with open(MOPAC7_PATH + "FOR005") as f:
+        for006 = f.read()
+    result =f"""{PROJECT_NAME}, {timestamp}, {COMMENT} \n
+    TOTAL ENERGY = {total_energy} KJ/MOL\n
+    CARTESIAN COORDINATE DERIVATIVES, kJ/mol/angstrem
+    {pd.DataFrame(gradients)}\n
+    ***FOR006 input***
+    {for006}\n
+    ***  XYZ input ***
+    {xyz}"""
+    with open(RESULT_PATH+"result"+timestamp+".txt", "w") as f:
+        f.write(result)
+
+main()

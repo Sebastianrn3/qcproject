@@ -1,0 +1,4 @@
+Skačiuojami energijos+gradientai kuriant inputą iš .xyz (pvz ch3cl_for_grad_test.xyz), kuris turi būti MOPAC7_PATH.
+
+Atsisiųsti:
+http://openmopac.net/Downloads/Downloads.html

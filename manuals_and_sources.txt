@@ -1,0 +1,14 @@
+MOPAC7:
+
+MOPAC Manual (Seventh Edition)
+Dr James J. P. Stewart
+PUBLIC DOMAIN COPY (NOT SUITABLE FOR PRODUCTION WORK)
+January 1993
+https://nova.disfarm.unimi.it/manual/pdf/Mopac7.pdf
+
+http://openmopac.net/Downloads/Downloads.html
+http://openmopac.net/manual/
+
+*****************
+
+NWChem https://nwchemgit.github.io/index.html

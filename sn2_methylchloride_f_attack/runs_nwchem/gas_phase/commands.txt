@@ -14,6 +14,8 @@ grep -i "Total DFT energy" "/mnt/c/Users/ddizy/Desktop/qcproject/reactions/sn2_m
 nwchem /mnt/c/Users/ddizy/Desktop/qcproject/reactions/sn2_methylchloride_f_attack/inputs_nwchem/gas_phase/ch3cl_opt_freq.nw > /mnt/c/Users/ddizy/Desktop/qcproject/reactions/sn2_methylchloride_f_attack/runs_nwchem/gas_phase/ch3cl_opt_freq.out && \
 grep -i "Total DFT energy" "/mnt/c/Users/ddizy/Desktop/qcproject/reactions/sn2_methylchloride_f_attack/runs_nwchem/gas_phase/ch3cl_opt_freq.out"
 
+nwchem /mnt/c/Users/ddizy/Desktop/qcproject/reactions/sn2_methylchloride_f_attack/inputs_nwchem/gas_phase/ch3cl_gradient.out.nw > /mnt/c/Users/ddizy/Desktop/qcproject/reactions/sn2_methylchloride_f_attack/runs_nwchem/gas_phase/ch3cl_gradient.out && \
+
 *********************
 TS:
 

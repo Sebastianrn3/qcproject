@@ -1,8 +1,0 @@
-AM1 XYZ GRADIENTS 1SCF CHARGE=0 MULTIPLICITY=1
-Methane
-Test gradients
-C         -6.14490        2.40665        0.00000
-H         -5.07490        2.40665        0.00000
-H         -6.50156        2.66892        0.97412
-H         -6.50157        1.43190       -0.25992
-H         -6.50157        3.11912       -0.71420

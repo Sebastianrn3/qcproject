@@ -1,0 +1,24 @@
+start CH3Cl_gradient
+title "CH3Cl gradient"
+memory total 2000 mb
+echo
+
+charge 0
+geometry units angstrom
+ C   0.000   0.000   0.000
+ H   0.000   1.080   0.000
+ H   1.020  -0.360   0.000
+ H  -1.020  -0.360   0.000
+ Cl  0.000   0.000   1.78
+end
+
+basis
+    * library def2-svpd
+end
+
+dft
+  xc b3lyp
+  grid xfine
+  iterations 200
+end
+task dft gradient

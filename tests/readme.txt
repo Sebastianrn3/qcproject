@@ -1,0 +1,1 @@
+bandymai įvesti patogumui .bat failus, dar mokomasi
