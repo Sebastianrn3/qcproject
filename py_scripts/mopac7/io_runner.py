@@ -90,7 +90,7 @@ def create_report(total_energy, gradients, timestamp):
         for006 = f.read()
     result =f"""{PROJECT_NAME}, {timestamp}, {COMMENT} \n
     TOTAL ENERGY = {total_energy} KJ/MOL\n
-    CARTESIAN COORDINATE DERIVATIVES, kJ/mol/angstrem
+    CARTESIAN COORDINATE DERIVATIVES, kJ/mol/A
     {pd.DataFrame(gradients)}\n
     ***FOR006 input***
     {for006}\n
