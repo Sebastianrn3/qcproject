@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
-import subprocess, os
+import subprocess, os, time
 from datetime import datetime
+from scipy.optimize import  minimize
 
 KCAL_TO_KJ = 4.184
 EV_TO_KJMOL = 96.4853321233
@@ -12,10 +13,11 @@ atoms_list = [""]
 MOPAC7_PATH = "C:/Users/ddizy/Desktop/mopac7/"
 RESULT_PATH = "C:/Users/ddizy/Desktop/qcproject/py_scripts/mopac7/mopac7_results/"
 NAME_XYZ = "ch3cl_for_grad_test.xyz"
+NAME_XYZ_OPTIMIZED = NAME_XYZ.replace(".xyz", "_optimized.xyz")
 
 
 multiplicity =  ["INVALID_MULTIPLICITY", "SINGLET", "DOUBLET", "TRIPLET", "QUARTET", "QUINTET", "SEXTET"]
-PROJECT_NAME="CH3Cl_gas"
+PROJECT_NAME=NAME_XYZ
 COMMENT="DFT_Energy_Gradient"
 CHARGE=0
 MULTI=multiplicity[1]
@@ -32,7 +34,6 @@ def main():
     total_energy, gradients = parse_for006()
     create_report(total_energy, gradients, timestamp)
     return total_energy, gradients
-    print("DONE")
 
 #**********************************
 def import_xyz():
@@ -43,7 +44,7 @@ def import_xyz():
     return atoms, geometry
 
 def create_for005(atoms, geometry, timestamp):
-    input_text=f"""AM1 1SCF XYZ GRADIENTS DEBUG DCART {MULTI} CHARGE={CHARGE}
+    input_text=f"""AM1 1SCF XYZ GRADIENTS DEBUG DCART GEO-OK {MULTI} CHARGE={CHARGE}
     {PROJECT_NAME} {timestamp}
     {COMMENT}\n"""
 
@@ -63,6 +64,10 @@ def run_mopac_exe():
     subprocess.run([str(MOPAC7_PATH + "mopac7.exe")], cwd=str(MOPAC7_PATH),text=True, check=False)
 
 def parse_for006():
+    if not os.path.exists(MOPAC7_PATH + "FOR006"):
+        time.sleep(11)
+        print("slept for a sec")
+
     with open(MOPAC7_PATH + "FOR006") as f:
         text = f.read()
 
@@ -83,8 +88,6 @@ def parse_for006():
 
     return total_energy, gradients
 
-
-
 def create_report(total_energy, gradients, timestamp):
     with open(MOPAC7_PATH + NAME_XYZ) as f:
         xyz = f.read()
@@ -98,7 +101,49 @@ def create_report(total_energy, gradients, timestamp):
     {for006}\n
     ***  XYZ input ***
     {xyz}"""
+    #print("DONE")
     with open(RESULT_PATH+"result"+timestamp+".txt", "w") as f:
         f.write(result)
 
-main()
+
+def sci_optimize():
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+
+    def get_flat_geometry():
+        _, geometry = import_xyz()
+        flat_geometry = geometry.reshape(-1, 4)[:, 1:].reshape(-1)
+        return flat_geometry.astype(float)
+
+    def rewrite_xyz(new_geometry_flat):
+        with open(MOPAC7_PATH + NAME_XYZ) as f:
+            lines = [ln.strip() for ln in f.readlines()]
+        n = int(lines[0])
+        new_xyz = f"{n}\n \n"
+        for i in range(n):
+            symbol = lines[2 + i].split()
+            symbol[1] = new_geometry_flat[i * 3]
+            symbol[2] = new_geometry_flat[i * 3 + 1]
+            symbol[3] = new_geometry_flat[i * 3 + 2]
+            new_xyz += " ".join(str(x) for x in symbol) + f"\n"
+        with open(MOPAC7_PATH + NAME_XYZ, "w") as f:
+            f.write(new_xyz)
+        #print("XYZ FILE REWROTE")
+
+    def get_gradient_and_energy_from_flat_geometry(x):
+        rewrite_xyz(x)
+        total_energy, gradient = main()
+        gradient = gradient[:, 2:]
+
+        #for row in gradient:
+        #    a, b, c = row[:3]
+        #    row[0], row[1], row[2] = float(b)*(-1), float(c), float(c)*(-1)
+
+        return float(total_energy), gradient.reshape(-1).astype(float)
+
+    res = minimize(fun = get_gradient_and_energy_from_flat_geometry,
+                   x0=get_flat_geometry(),
+                   jac = True,
+                   )
+    print(res)
+
+sci_optimize()
