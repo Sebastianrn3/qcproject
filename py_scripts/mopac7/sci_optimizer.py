@@ -12,7 +12,7 @@ atoms_list = [""]
 
 MOPAC7_PATH = "C:/Users/ddizy/Desktop/mopac7/"
 RESULT_PATH = "C:/Users/ddizy/Desktop/qcproject/py_scripts/mopac7/mopac7_results/"
-NAME_XYZ = "ch3cl_for_grad_test.xyz"
+NAME_XYZ = "CH4.xyz"
 NAME_XYZ_OPTIMIZED = NAME_XYZ.replace(".xyz", "_optimized.xyz")
 
 
