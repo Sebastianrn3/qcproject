@@ -1,4 +1,7 @@
-Skačiuojami energijos+gradientai kuriant inputą iš .xyz (pvz ch3cl_for_grad_test.xyz), kuris turi būti MOPAC7_PATH.
+Skačiuojami energijos+gradientai kuriant inputą iš .xyz (pvz ch3cl_for_grad_test.xyz), kuris turi būti MOPAC7_PATH kur randasi mopac7.exe.
+
+io-runner.py paleidžia SCF1 skaičiavimą
+sci-optimizer paleidžia seriją skaičiavimų su kiekvienu iteravimu perrašinėdamas .xyz turinį (prieš paleidžiant verta turėti originalios geometrijos kopiją)
 
 Atsisiųsti:
 http://openmopac.net/Downloads/Downloads.html

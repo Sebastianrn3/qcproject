@@ -11,7 +11,7 @@ atoms_list = [""]
 
 MOPAC7_PATH = "C:/Users/ddizy/Desktop/mopac7/"
 RESULT_PATH = "C:/Users/ddizy/Desktop/qcproject/py_scripts/mopac7/mopac7_results/"
-NAME_XYZ = "ch3cl_for_grad_test.xyz"
+NAME_XYZ = "HCl.xyz"
 
 
 multiplicity =  ["INVALID_MULTIPLICITY", "SINGLET", "DOUBLET", "TRIPLET", "QUARTET", "QUINTET", "SEXTET"]

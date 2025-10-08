@@ -12,7 +12,7 @@ atoms_list = [""]
 
 MOPAC7_PATH = "C:/Users/ddizy/Desktop/mopac7/"
 RESULT_PATH = "C:/Users/ddizy/Desktop/qcproject/py_scripts/mopac7/mopac7_results/"
-NAME_XYZ = "CH4.xyz"
+NAME_XYZ = "ch3cl_for_grad_test.xyz"
 NAME_XYZ_OPTIMIZED = NAME_XYZ.replace(".xyz", "_optimized.xyz")
 
 
@@ -134,15 +134,12 @@ def sci_optimize():
         total_energy, gradient = main()
         gradient = gradient[:, 2:]
 
-        #for row in gradient:
-        #    a, b, c = row[:3]
-        #    row[0], row[1], row[2] = float(b)*(-1), float(c), float(c)*(-1)
-
         return float(total_energy), gradient.reshape(-1).astype(float)
 
     res = minimize(fun = get_gradient_and_energy_from_flat_geometry,
                    x0=get_flat_geometry(),
                    jac = True,
+                   method="L-BFGS-B",
                    )
     print(res)
 
