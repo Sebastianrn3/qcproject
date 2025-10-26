@@ -6,11 +6,13 @@ from scipy.optimize import  minimize
 #obligatory parameters
 MULTI = "SINGLET"
 CHARGE = 0
-NAME_XYZ = "HF.xyz"
+NAME_XYZ = "CH4.xyz"
 
 #directories
 XYZ_PATH = Path("XYZs")
 MOPAC7_PATH =  Path.cwd().parents[2]/"mopac7"
+
+N=0
 
 def main():
     atoms, geometry = import_xyz()
@@ -39,8 +41,16 @@ def create_mopac_input(atoms, geometry):
     with open(MOPAC7_PATH/"FOR005", "w") as f:
         f.write(input_text)
 
+    with open(MOPAC7_PATH/f"FOR005-{N}", "w") as f:
+        f.write(input_text)
+
 def clear_mopac_outputs():
-    for file in ("FOR006", "FOR009", "FOR011", "FOR012", "FOR016", "SHUTDOWN"):
+    global N
+    src = Path(MOPAC7_PATH/"FOR006")  # файл в другой папке
+    dst = src.with_name(f"FOR006-{N}")  # то же место, новое имя
+    src.rename(dst)
+    N += 1
+    for file in ("FOR009", "FOR011", "FOR012", "FOR016", "SHUTDOWN"):
         if os.path.exists(MOPAC7_PATH / file):
             os.remove(MOPAC7_PATH / file)
 
@@ -68,6 +78,8 @@ def sci_minimize():
     EV_TO_HARTREE = 1 / 27.211386245988
     HARTREE_PER_KCALMOL = 1 / 627.5094740631
     ANGSTROM_PER_BOHR = 0.529177210903
+    global calclog
+    calclog = ""
 
     def rewrite_xyz(x_bohr):
         x_ang = x_bohr * ANGSTROM_PER_BOHR
@@ -83,11 +95,12 @@ def sci_minimize():
             f.write(new_xyz)
 
     def run_scf(x_bohr):
+        global calclog
         rewrite_xyz(x_bohr)
-
         E_eV, G_kcal_per_A = main()
         E_Eh = E_eV * EV_TO_HARTREE
         G_Eh_per_bohr = G_kcal_per_A * HARTREE_PER_KCALMOL * ANGSTROM_PER_BOHR
+        calclog += f"Tot energy {E_Eh} Eh\n grads, Eh/bohr:\n{G_Eh_per_bohr.reshape(-1, 3)}\n XYZ, bohr: \n{x_bohr.reshape(-1, 3)}\n**********\n"
         return E_Eh, G_Eh_per_bohr
 
     def lbfgsb(x_start):
@@ -96,13 +109,15 @@ def sci_minimize():
             x0 = x_start,
             jac = True,
             method="L-BFGS-B",
-            options={"maxiter": 500, "maxls": 50}
+            options={'iprint': 2}
         )
 
     x0_ang = import_xyz()[1].ravel()
     x0_bohr = x0_ang / ANGSTROM_PER_BOHR
+    calclog += f"x0, bohr:\n{x0_bohr.reshape(-1, 3)}\n**********\n"
 
     res = lbfgsb(x0_bohr)
     print(res)
+    #print(calclog)
 
 sci_minimize()
